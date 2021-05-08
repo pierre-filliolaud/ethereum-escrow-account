@@ -1,10 +1,12 @@
 pragma solidity >=0.6.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MyToken is ERC20 {
+contract MyToken is ERC20, Ownable {
 
     event Msg(uint indexed orderId);
+    address escrowAddress;
 
     /**
      * @dev Constructor that gives msg.sender all of existing tokens.
@@ -17,15 +19,14 @@ contract MyToken is ERC20 {
         _mint(msg.sender, initialSupply);
     }
 
-    function approve(address spender, uint256 amount) public  override returns (bool) {
-        emit Msg(1);
-        _approve(_txOrigin(), spender, amount);
-        emit Approval(_txOrigin(), spender, amount);
-        return true;
+    function initEscrowAddress(address _escrowAddress) public onlyOwner {
+        escrowAddress = _escrowAddress;
     }
 
-    function test(address spender, uint256 amount) public  returns (bool) {
-        emit Msg(1);
+    function approve(address spender, uint256 amount) public override returns (bool) {
+        require(escrowAddress != address(0), "Escrow address must be initialized");
+        require(msg.sender == escrowAddress, "Wrong Escrow address used");
+        _approve(_txOrigin(), spender, amount);
         return true;
     }
 

@@ -15,3 +15,6 @@ totalSupply = await myToken.totalSupply()
 totalSupply
 name = await myToken.name()
 name
+
+escrow = await Escrow.deployed()
+myTokenAddress = await escrow.getMyTokenAddress()

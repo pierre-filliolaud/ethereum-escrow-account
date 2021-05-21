@@ -112,10 +112,13 @@ App = {
             status = 'Pending'
             break;
           case 1:
-            status = 'Accept'
+            status = 'Settled'
             break;
           case 2:
-            status = 'Settled'
+            status = 'Refused'
+            break;
+          case 3:
+            status = 'Canceled'
             break;
         }
 
@@ -134,11 +137,19 @@ App = {
         $newOrderTemplate.find('.buyerAddress').html(buyerAddress)
         $newOrderTemplate.find('.settlementAmount').html(settlementAmount)
         $newOrderTemplate.find('.status').html(status)
+        $newOrderTemplate.find('.accept')
         .prop('orderId', orderId)
         .prop('settlementAmount', settlementAmount)
         .prop('buyerAddress', buyerAddress)
         .prop('sellerAddress', sellerAddress)
         .on('click', App.acceptOrder)
+        $newOrderTemplate.find('.refuse')
+        .prop('orderId', orderId)
+        .prop('sellerAddress', sellerAddress)
+        .on('click', App.refuseOrder)
+        $newOrderTemplate.find('.cancel')
+        .prop('orderId', orderId)
+        .on('click', App.cancelOrder)
         
           $('#orderList').append($newOrderTemplate)
   
@@ -171,6 +182,24 @@ App = {
       console.log('buyerAddress: '+buyerAddress)
       console.log('sellerAddress: '+sellerAddress)
       await App.escrow.acceptOrder(orderId, sellerAddress, {from: web3.eth.accounts[0], value: weiValue})
+      window.location.reload()
+    },
+
+    refuseOrder: async (e) => {
+      App.setLoading(true)
+      const orderId = e.target.orderId
+      const sellerAddress = e.target.sellerAddress
+      console.log('orderId: '+orderId)
+      console.log('sellerAddress: '+sellerAddress)
+      await App.escrow.refuseOrder(orderId, sellerAddress, {from: web3.eth.accounts[0]})
+      window.location.reload()
+    },
+
+    cancelOrder: async (e) => {
+      App.setLoading(true)
+      const orderId = e.target.orderId
+      console.log('orderId: '+orderId)
+      await App.escrow.cancelOrder(orderId, {from: web3.eth.accounts[0]})
       window.location.reload()
     },
   

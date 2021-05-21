@@ -35,7 +35,7 @@
         margin-bottom: 0px;
       }
 
-      #completedOrders .quantity .settlementAmount .buyerAddress {
+      #completedOrders .quantity .settlementAmount .buyerAddress .accept .refuse .cancel {
         color: grey;
         text-decoration: line-through;
       }
@@ -94,6 +94,7 @@
                     <th scope="col">SellerAddress</th>
                     <th scope="col">BuyerAddress</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="orderList">
@@ -104,6 +105,11 @@
                     <td id="sellerAddress" class="sellerAddress">SellerAddress</td>
                     <td id="buyerAddress" class="buyerAddress">BuyerAddress</td>
                     <td id="status" class="status">Status</td>
+                    <td
+                      ><button id="accept" type="button" class="accept btn btn-success">Accept</button>
+                      <button id="refuse" type="button" class="refuse btn btn-danger">Refuse</button>
+                      <button id="cancel" type="button" class="cancel btn btn-warning">Cancel</button>
+                    </td>
                   </tr>
                 </tbody>
               </table>

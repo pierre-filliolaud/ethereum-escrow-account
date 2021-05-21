@@ -8,7 +8,7 @@ import "./MyToken.sol";
 
 contract Escrow is Ownable {
 
-    enum OrderStatus { Pending, Accept, Settled, Refunded }
+    enum OrderStatus { Pending, Settled, Refused, Canceled }
 
     event OrderUpdate(uint indexed orderId, address indexed seller, address indexed buyer, uint quantity, uint settlementAmount, OrderStatus status);
 
@@ -70,6 +70,23 @@ contract Escrow is Ownable {
         _receiver.transfer(msg.value);
         // _receiver.transfer(order.settlementAmount);
         emit OrderUpdate(_orderId, order.seller, msg.sender, order.quantity, order.settlementAmount, OrderStatus.Settled);
+    }
+
+    function refuseOrder(uint _orderId, address _seller) external {
+        Order storage order = orders[_orderId];
+        assert(order.buyer == msg.sender);
+        assert(order.seller == _seller);
+        order.status = OrderStatus.Refused;
+        MyToken(myTokenAddress).transfer(_seller, order.quantity);
+        emit OrderUpdate(_orderId, order.seller, order.buyer, order.quantity, order.settlementAmount, OrderStatus.Refused);
+    }
+
+    function cancelOrder(uint _orderId) external {
+        Order storage order = orders[_orderId];
+        assert(order.seller == msg.sender);
+        order.status = OrderStatus.Canceled;
+        MyToken(myTokenAddress).transfer(msg.sender, order.quantity);
+        emit OrderUpdate(_orderId, order.seller, order.buyer, order.quantity, order.settlementAmount, OrderStatus.Canceled);
     }
 
     // function release(uint _orderId) external {

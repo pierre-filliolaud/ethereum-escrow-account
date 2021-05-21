@@ -31,7 +31,6 @@ contract Escrow is Ownable {
         address _myTokenAddress
     ) public {
         myTokenAddress = _myTokenAddress;
-        // MyToken(myTokenAddress).initEscrowAddress(address(this));
     }
 
     function initMyTokenAddress(address _myTokenAddress) external onlyOwner {

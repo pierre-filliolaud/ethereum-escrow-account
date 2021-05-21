@@ -22,6 +22,8 @@ contract Escrow is Ownable {
         bool refundApproved;
     }
 
+    uint public orderCount = 0;
+
     mapping(uint => Order) public orders;
     address public myTokenAddress;
 
@@ -31,7 +33,7 @@ contract Escrow is Ownable {
         myTokenAddress = _myTokenAddress;
     }
 
-    function updateMyTokenAddress(address _myTokenAddress) external onlyOwner {
+    function initMyTokenAddress(address _myTokenAddress) external onlyOwner {
         myTokenAddress = _myTokenAddress;
     }
 
@@ -44,26 +46,29 @@ contract Escrow is Ownable {
     }
 
     // initiated by seller
-    function createOrder(uint _orderId, address payable _buyer, uint _quantity, uint _settlementAmount) external returns (bool) {
-        orders[_orderId] = Order(_orderId, msg.sender, _buyer, _quantity,  _settlementAmount, OrderStatus.Pending, false);
+    function createOrder(address payable _buyer, uint _quantity, uint _settlementAmount) external returns (bool) {
+        orderCount ++;
+        orders[orderCount] = Order(orderCount, msg.sender, _buyer, _quantity,  _settlementAmount, OrderStatus.Pending, false);
         // (bool success, bytes memory result) = address(myToken).delegatecall(abi.encodeWithSignature("approve(address,uint256)", address(this), _value));
         require(myTokenAddress != address(0), "ERC20 has zero address");
         MyToken(myTokenAddress).approve(address(this), _quantity);
         MyToken(myTokenAddress).transferFrom(msg.sender, address(this), _quantity);
-        emit OrderUpdate(_orderId, msg.sender, _buyer, _quantity, _settlementAmount, OrderStatus.Pending);
+        emit OrderUpdate(orderCount, msg.sender, _buyer, _quantity, _settlementAmount, OrderStatus.Pending);
         return true;
     }
 
     // initiated by buyer
-    function acceptOrder(uint _orderId) external payable {
+    function acceptOrder(uint _orderId, address payable _receiver) external payable {
         Order storage order = orders[_orderId];
         assert(order.buyer == msg.sender);
-        assert(order.settlementAmount == msg.value);
+        assert(order.seller == _receiver);
+        require(order.settlementAmount * 1000000000000000000 == msg.value, "Wrong settlementAmount");
         
         order.status = OrderStatus.Settled;
         // address(myToken).delegatecall(abi.encodeWithSignature("transfer(address,uint256)", address(this), order.value));
         MyToken(myTokenAddress).transfer(msg.sender, order.quantity);
-        (order.seller).transfer(order.settlementAmount);
+        _receiver.transfer(msg.value);
+        // _receiver.transfer(order.settlementAmount);
         emit OrderUpdate(_orderId, order.seller, msg.sender, order.quantity, order.settlementAmount, OrderStatus.Settled);
     }
 
